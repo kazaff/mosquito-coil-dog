@@ -3,7 +3,7 @@
 
 ### 特性图
 
-![](https://github.com/kazaff/mosquito-coil-dog/blob/master/MCDog.png)
+![](https://github.com/kazaff/mosquito-coil-dog/docs/blob/master/MCDog.png)
 
 图中，"灰色"表示预留，放在未来实现，"绿色"表示首要任务，"黄色"表示待定。
 
