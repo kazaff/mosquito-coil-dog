@@ -22,10 +22,13 @@ MCDog将服务编排抽象成两个概念：
 
 控制型任务表示的是和工作流程控制相关的任务，常见的控制型任务有：
 
-	 1. if ... [elseif ... [else ... ]]
+	 1. if ... [elseif ... [else ... ]] / case ... [case ... [default ...]]
 	 2. begin ... [then ... [then ... ]]
-	 3. loopSeries
-	 4. loopParallel
+	 3. pass
+	 4. loopSeries
+	 5. loopParallel
+
+其中`pass`类型，主要是为测试使用，它会直接输出接收到的input数据，并且也支持定义一些output数据作为输出。
 
 后两类对应编程语言的"for"或"while"，不过拆分成了串行和并行两种。各种控制型任务必须支持嵌套来适配复杂的工作流，目前暂时没有计划限制嵌套的层级数，但个人认为实际场景中很少会存在超过5层的嵌套。
 
@@ -64,3 +67,10 @@ MCDog管理后台目前会围绕服务编排模块提供相关的操作界面，
 #### 持久化
 
 用户创建的服务编排描述，最终都会以字符串的方式保存在redis中，这没有什么好说的~~
+
+### 参考
+
+- [Amazon States Language](https://states-language.net/spec.html)
+- [freedom-api](https://github.com/zengwenfu/freedom-api)
+- [conductor](https://netflix.github.io/conductor/)
+- [JsonPath](http://goessner.net/articles/JsonPath/)
