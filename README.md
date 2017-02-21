@@ -11,6 +11,8 @@
 
 ### 蓝图
 
+![](https://github.com/kazaff/mosquito-coil-dog/blob/master/docs/layer.png)
+
 #### 服务编排
 
 在特性图中，详细的描述出了关于服务编排所期望的特性。目前结合我们团队的实际情况，并不是特别急需一套DSL，一个表达力足够的JSON会让使用MCDog的用户使用起来更有亲和力，如此一来也可以暂时略过解析DSL的复杂度。
