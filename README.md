@@ -70,6 +70,10 @@ MCDog管理后台目前会围绕服务编排模块提供相关的操作界面，
 
 用户创建的服务编排描述，最终都会以字符串的方式保存在redis中，这没有什么好说的~~
 
+### 流程图
+
+![](https://github.com/kazaff/mosquito-coil-dog/blob/master/docs/flow.png)
+
 ### 参考
 
 - [Amazon States Language](https://states-language.net/spec.html)
