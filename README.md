@@ -74,6 +74,10 @@ MCDog管理后台目前会围绕服务编排模块提供相关的操作界面，
 
 ![](https://github.com/kazaff/mosquito-coil-dog/blob/master/docs/flow.png)
 
+### DSL例子
+
+[例子](https://github.com/kazaff/mosquito-coil-dog/blob/master/docs/example.js)
+
 ### 参考
 
 - [Amazon States Language](https://states-language.net/spec.html)
