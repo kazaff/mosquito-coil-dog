@@ -1,10 +1,10 @@
 {
 	"workflow": "example",	// 该工作流名称+版本号必须唯一
 	"version": 0.1,	// 版本号参数需要在请求头中携带对应的参数
+	"priority": 0, // 接口处理优先级，范围0-9
 	"description": "",	// 工作流描述
 	"type": "rest",		// 暂时对外只提供rest协议
 	"method": "get",
-	"location": "/example",
 	"switch": true,	// 服务状态开关
 	"tasks": [		// []表示其中定义的任务以并发方式执行
 		{
@@ -61,9 +61,14 @@
 									"users.length > 0"
 								],
 								"type": "function",
-								"defination": function(in, out, done){	// 自定义函数会被MCDog封装到promise中，最后一个入参done接受一个参数：err
+								"defination": function(){	// 自定义函数会被MCDog封装到promise中，最后一个入参done接受一个参数：err
 									// 暂时不支持使用第三方类库，所以自定义函数体尽可能使用js原生语法，当然，MCDog会把常用的第三方库预置在全局对象中，例如：lodash, moment等
 									// 也可以通过框架插件机制将自己需要的第三方类库在MCDog初始化是加入全局对象中
+
+									// todo jsonpath解析时不支持函数定义携带任何参数，否则会报解析错误
+									var input = arguments[0];
+									var output = arguments[1];
+									var done = arguments[2];
 									for(var i = 0, max = in.list.length; i < max; i++){
 										for(var j = 0, inMax = in.users.length; j < inMax; j++){
 											if(in.list[i].uid === in.users[j].id){
