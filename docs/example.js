@@ -5,7 +5,6 @@
 	"description": "",	// 工作流描述
 	"type": "rest",		// 暂时对外只提供rest协议
 	"method": "get",
-	"switch": true,	// 服务状态开关
 	"tasks": [		// []表示其中定义的任务以并发方式执行
 		{
 			"name": "totalTask",	// 任务名称在该工作流中必须唯一
@@ -13,10 +12,10 @@
 			"method": "get",
 			"location": "//xxxx/xxxx/{:a}",	// url中的参数会使用input属性中的定义的值
 			"header": {
-				"x-auth": "$.input.init.token"	// 根据历史原因，若没有声明这个请求头，MCDog也会自动为所有rest型任务添加该请求头
+				"x-auth-token": "$.request.header.auth-token"	// 根据历史原因，若没有声明这个请求头，MCDog也会自动为所有rest型任务添加该请求头
 			}
 			"input": {
-				"a": "$.input.init.a"	// 值声明为jsonpath语法，其中"init"表示工作流接受到的参数根节点
+				"a": "$.request.a"	// 值声明为jsonpath语法
 			},
 			"output": {	// 若没有声明该属性，则相当于任务得到的响应数据全部保留
 				"total": "$.output.totalTask.total"
@@ -39,11 +38,11 @@
 			"name": "listTask",
 			"type": "rest",
 			"method": "get",
-			"location": "//xxxx/xxxx/{:a}?page={:num}&sort={:field}",
+			"location": "//xxxx/xxxx/{:a}?page={:num}&sort={:column}",
 			"input": {
-				"a": "$.input.init.a",
-				"num": "$.input.init.num",
-				"field": "$.input.init.field"
+				"a": "$.request.a",
+				"num": "$.request.num",
+				"column": "$.request.column"
 			},
 			"tasks": [	// 外层任务执行完后才会执行嵌套的任务
 				{
@@ -91,7 +90,7 @@
 					"name": "checkCodeTask",	// 任务名称在该工作流中必须唯一
 					"type": "pass",
 					"output": {	// 若不设置该属性，则会将输入参数原封不动返回，输入参数默认是上一层任务的输出数据
-						"checkCode": "$.input.init.checkCode"
+						"checkCode": "$.request.checkCode"
 					}
 				}
 			]
