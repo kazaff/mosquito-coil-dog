@@ -63,6 +63,11 @@ Walkdir.sync(HANDLER_PATH, {no_recurse: true}, function(path, stat){
 	}
 });
 
+// TODO TODO TODO 服务上线，有效性检查 + 解析生成js文件 + 服务绑定
+PluginManager.plugin(PluginManager.EVENTS.SERVICE_OLINE, function({Loader, filename}, next) {
+
+});
+
 // 服务解绑 + 文件删除
 PluginManager.plugin(PluginManager.EVENTS.SERVICE_OFFLINE, function({Loader, filename}, next) {
 	let meta = _.split(filename, '_');

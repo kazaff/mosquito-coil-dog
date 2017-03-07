@@ -65,7 +65,16 @@ module.exports.init = function init(HANDLER_PATH){
 
 		if(status === 1){	// 服务上线
 
-			// TODO TODO TODO 有效性检查 + 解析生成js文件 + 服务绑定
+			yield new Promise(function(resolve, reject){
+				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_OLINE, {Loader, filename}, (err)=>{
+					if(err){
+						// TODO 异常处理
+						reject(err);
+					}else{
+						resolve();
+					}
+				});
+			});
 
 		}else if(status === 0){	// 服务下线
 			yield new Promise(function(resolve, reject){
