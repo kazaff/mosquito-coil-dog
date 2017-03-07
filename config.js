@@ -15,7 +15,8 @@ module.exports = {
 		"host": "127.0.0.1",
 		"port": 2334,
 		"user": "kz",
-		"password": "123"
+		"password": "123",
+		"ifActive": true, 	// 可以不开启管理后台
 	},
 	"plugins": [	// 挂在相同HOOK的插件顺序很重要
 		"/StartProcessPlugin",	// 自带的默认插件，用于输出ASCII logo

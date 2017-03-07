@@ -31,7 +31,7 @@ if(_.isArray(Config.plugins)){
 }
 
 // 触发系统初始化事件(SYSTEM_BOOTSTRAP)，同步
-PluginManager.applyPlugins(PluginManager.EVENTS.SYSTEM_BOOTSTRAP, LoaderManager);
+PluginManager.applyPlugins(PluginManager.EVENTS.SYSTEM_BOOTSTRAP, LoaderManager, Config);
 
 // 注册服务处理逻辑
 const ServiceContainer = {};	// 服务注册表容器
@@ -89,4 +89,5 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_OFFLINE, function({Loader, fil
 APIServerManager.init(ServiceContainer);
 
 // 初始化admin webserver
-AdminServerManager.init(HANDLER_PATH);
+if(Config.admin_server.ifActive)
+	AdminServerManager.init(HANDLER_PATH);
