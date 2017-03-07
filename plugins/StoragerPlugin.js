@@ -15,7 +15,7 @@ function _connectRedis(Loader){
 	let ExceptionManager = Loader.get('ExceptionManager');
 
 	// 创建redis连接
-	let Redis = Loader.load('Redis', 'redis');
+	let Redis = require('redis');
 	let Config = Loader.get('Config');
 	RedisClient = Redis.createClient({
 		host: Config.storage.host,
@@ -45,30 +45,82 @@ function _connectRedis(Loader){
 
 function StoragerPlugin() {}
 StoragerPlugin.prototype.apply = function(PluginManager) {
-    PluginManager.plugin(PluginManager.EVENTS.SYSTEM_BOOTSTRAP, function(Loader) {
+		PluginManager.plugin(PluginManager.EVENTS.STORAGE_READ, function({Loader, query}, next) {
 			let _ = Loader.get('Lodash');
-			let EventManager = Loader.get('Core.EventManager');
 			let db = _connectRedis(Loader);
 
-			// 用于系统初始化后载入处于激活状态的服务
-			let registrations = [];
-			db.hgetall('State', function(error, result){
-				_.forOwn(result, function(state, path){
-					if(parseInt(state) > 0){
-						registrations.push(path);	// path由服务的type_method_name_version_priority组成, 对应"compiled_services"文件夹里的特定js文件
+			if(query.command === 'services'){
+				db.multi()
+					.hgetall('State')
+					.hgetall('DSL')
+					.exec(function(err, result){
+						if(err){
+							next(err);
+						}else{
+
+							// 数据合并
+							let list = [];
+							_.forOwn(result[1], function(dsl, path){
+								let item = {
+									path: path,
+									dsl: dsl,
+									state: parseInt(result[0][path])
+								}
+
+								list.push(item);
+							});
+
+							next(null, list);
+						}
+					});
+			}else if(query.command === 'find'){
+				db.hget('State', query.id, function(err, result){
+					if(err){
+						next(err);
+					}else{
+						next(null, !_.isNil(result));
 					}
 				});
-
-				EventManager.emit(EventManager.EVENTS.SERVICE_BIND, registrations);
-			});
+			}
     });
 
-		PluginManager.plugin(PluginManager.EVENTS.STORAGE_READ, function(Loader) {
-			// TODO
-    });
+		PluginManager.plugin(PluginManager.EVENTS.STORAGE_SAVE, function({Loader, query}, next) {
+			let _ = Loader.get('Lodash');
+			let db = _connectRedis(Loader);
 
-		PluginManager.plugin(PluginManager.EVENTS.STORAGE_SAVE, function(Loader) {
-			// TODO
+			if(query.command === 'delete'){
+				db.multi()
+				 	.hdel('State', query.id)
+					.hdel('DSL', query.id)
+					.exec(function(err, result){
+						if(err){
+							next(err);
+						}else{
+							// TODO 事务原子性保证
+							next();
+						}
+					});
+			}else if(query.command === 'change'){
+				db.hmset('State', query.id, query.status, function(err){
+					if(err){
+						next(err);
+					}else{
+						next();
+					}
+				})
+			}else if(query.command === 'save'){
+				db.multi()
+				 	.hmset('State', query.id, 0)
+					.hmset('DSL', query.id, query.dsl)
+					.exec(function(err, result){
+						if(err){
+							next(err);
+						}else{
+							// TODO 事务原子性保证
+							next();
+						}
+					});
+			}
     });
 }
 

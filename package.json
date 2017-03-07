@@ -27,11 +27,14 @@
     "koa": "^1.2.5",
     "koa-better-body": "^3.0.2",
     "koa-cors": "0.0.16",
+    "koa-http-auth": "0.0.3",
     "koa-route": "^2.4.2",
     "lodash": "^4.17.4",
+    "notevil": "^1.1.0",
     "redis": "^2.6.5",
     "request": "^2.79.0",
     "rest-url": "0.0.4",
-    "tapable": "^0.2.6"
+    "tapable": "^0.2.6",
+    "walkdir": "0.0.11"
   }
 }

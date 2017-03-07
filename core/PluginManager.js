@@ -12,7 +12,7 @@ PluginManager.prototype.EVENTS = {
 	DSL_VALIDATE: 'dsl_validate', // dsl 合法性校验的HOOK
 	DSL_PARSE: 'dsl_parse', // dsl 解析编译的HOOK
 	STORAGE_SAVE: 'storage_save', // dsl 数据持久化的HOOK，用于将dsl等信息持久化到db，而dsl编译后的结果MCDog会创建对应的js文件存储在本地
-	STORAGE_READ: 'storage_read', // 相关数据加载的HOOK，主要用于服务的状态，名称，版本号等数据的获取
+	STORAGE_READ: 'storage_read', // 相关数据加载的HOOK，主要用于服务的状态的获取
 	// 所有TASK_类型HOOK，都会传递任务的相关数据，如：context, handler, socket, etc
 	TASK_CONTEXT_CREATE_AFTER: 'task_context_create_after', // 请求上下文实例创建的HOOK
 	TASK_COMPLETE: 'task_complete', 	// 任务完成的HOOK，只用于做服务器端相关统计等逻辑，串行

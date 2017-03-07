@@ -8,13 +8,14 @@ module.exports = {
 	},
 	"api_server": {
 		"host": "127.0.0.1",
-		"port": "2333",
+		"port": 2333,
 		"concurrency": 1000,	// api对外提供处理请求的并发数
 	},
 	"admin_server": {
-		"host": "",
-		"port": "",
-		"password": ""
+		"host": "127.0.0.1",
+		"port": 2334,
+		"user": "kz",
+		"password": "123"
 	},
 	"plugins": [	// 挂在相同HOOK的插件顺序很重要
 		"/StartProcessPlugin",	// 自带的默认插件，用于输出ASCII logo

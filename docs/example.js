@@ -1,5 +1,5 @@
-{
-	"workflow": "example",	// 该工作流名称+版本号必须唯一
+{	// 正式的dsl定义是不允许携带注释的，下面的注释只是方便理解
+	"name": "example",	// 该工作流名称+版本号必须唯一
 	"version": 0.1,	// 版本号参数需要在请求头中携带对应的参数
 	"priority": 0, // 接口处理优先级，范围0-9
 	"description": "",	// 工作流描述
@@ -68,10 +68,10 @@
 									var input = arguments[0];
 									var output = arguments[1];
 									var done = arguments[2];
-									for(var i = 0, max = in.list.length; i < max; i++){
-										for(var j = 0, inMax = in.users.length; j < inMax; j++){
-											if(in.list[i].uid === in.users[j].id){
-												in.list[i].username = in.users[j].name;	// 默认允许直接对上下文对象进行扩展
+									for(var i = 0, max = input.list.length; i < max; i++){
+										for(var j = 0, inMax = input.users.length; j < inMax; j++){
+											if(input.list[i].uid === input.users[j].id){
+												input.list[i].username = input.users[j].name;	// 默认允许直接对上下文对象进行扩展
 												break;
 											}
 										}
