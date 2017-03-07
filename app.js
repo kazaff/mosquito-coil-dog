@@ -1,5 +1,5 @@
 // 加载系统库
-const fs = require('fs');
+const Fs = require('fs');
 const Path = require('path');
 const Walkdir = require('walkdir');
 // 定义相关路径
@@ -18,9 +18,6 @@ LoaderManager.load('Core.ContextManager', CORE_PATH + '/ContextManager.js');
 // 通过资源管理器加载默认类库
 const _ = LoaderManager.get('Lodash');
 const ExceptionManager = LoaderManager.get('ExceptionManager');
-
-// 初始化admin webserver
-AdminServerManager.init(HANDLER_PATH);
 
 // 挂载所有的插件
 if(_.isArray(Config.plugins)){
@@ -54,7 +51,7 @@ Walkdir.sync(HANDLER_PATH, {no_recurse: true}, function(path, stat){
 	}
 
 	// 唯一性验证
-	if(_.has(ServiceContainer, domain)){
+	if(_.has(ServiceContainer, domain) && !_.isNull(ServiceContainer[service])){
 		throw ExceptionManager.factory.create('ConfigError', 'service domain('+ filename +') conflict');
 	}
 
@@ -66,5 +63,25 @@ Walkdir.sync(HANDLER_PATH, {no_recurse: true}, function(path, stat){
 	}
 });
 
+// 服务解绑 + 文件删除
+PluginManager.plugin(PluginManager.EVENTS.SERVICE_OFFLINE, function({Loader, filename}, next) {
+	let meta = _.split(filename, '_');
+	let domain = _.join(_.dropRight(meta), '_');	// 注册表中服务的key为：type_method_name_version
+	let path = HANDLER_PATH + '/' + filename + '.js';
+
+	ServiceContainer[domain] = null;
+	// 移除已加载的代码
+	delete require.cache[require.resolve(path)];
+
+	// 删除文件
+	if(Fs.existsSync(path))
+		Fs.unlinkSync(path);
+
+	next();
+});
+
 // 初始化api webserver
 APIServerManager.init(ServiceContainer);
+
+// 初始化admin webserver
+AdminServerManager.init(HANDLER_PATH);

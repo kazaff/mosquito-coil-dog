@@ -59,18 +59,31 @@ module.exports.init = function init(HANDLER_PATH){
 	}));
 
 	// 服务上下线
-	AdminServer.use(KoaRoute.put('/service/:path/:status', function *(path, status){
+	AdminServer.use(KoaRoute.put('/service/:filename/:status', function *(filename, status){
 		let Context = this;
+		status = parseInt(status);
 
-		// TODO TODO TODO 服务上线：有效性检查 + 解析生成js文件 + 服务绑定
+		if(status === 1){	// 服务上线
 
-		// TODO 服务下线：服务解绑 + 文件删除
+			// TODO TODO TODO 有效性检查 + 解析生成js文件 + 服务绑定
 
+		}else if(status === 0){	// 服务下线
+			yield new Promise(function(resolve, reject){
+				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_OFFLINE, {Loader, filename}, (err)=>{
+					if(err){
+						// TODO 异常处理
+						reject(err);
+					}else{
+						resolve();
+					}
+				});
+			});
+		}
 
 		// 修改db中对应的状态
 		let query = {
 			command: 'change',
-			id: path,
+			id: filename,
 			status: status
 		};
 		yield new Promise(function(resolve, reject){
