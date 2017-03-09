@@ -63,9 +63,29 @@ Walkdir.sync(HANDLER_PATH, {no_recurse: true}, function(path, stat){
 	}
 });
 
-// TODO TODO TODO 服务上线，有效性检查 + 解析生成js文件 + 服务绑定
-PluginManager.plugin(PluginManager.EVENTS.SERVICE_OLINE, function({Loader, filename}, next) {
+// 服务上线
+PluginManager.plugin(PluginManager.EVENTS.SERVICE_ONLINE, function({Loader, filename}, next) {
 
+	// 获取dsl声明
+	let query = {
+		command: 'find',
+		id: filename
+	};
+
+	PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, dslDef)=>{
+
+		if(err) return next(err);
+
+		// 有效性检查
+		PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
+			if(err || result.state === false){
+				next(err, result);
+			}else{
+				// TODO 解析生成js文件
+					// TODO 服务注册
+			}
+		});
+	});
 });
 
 // 服务解绑 + 文件删除

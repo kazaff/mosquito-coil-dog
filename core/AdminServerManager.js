@@ -66,9 +66,11 @@ module.exports.init = function init(HANDLER_PATH){
 		if(status === 1){	// 服务上线
 
 			yield new Promise(function(resolve, reject){
-				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_OLINE, {Loader, filename}, (err)=>{
-					if(err){
-						// TODO 异常处理
+				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_ONLINE, {Loader, filename}, (err)=>{
+					if(err || result.state !== true){	// 没有明确返回true就说明没有通过校验
+						// 异常处理
+						Context.state = 422;
+						Context.body = err || result.msg;
 						reject(err);
 					}else{
 						resolve();
@@ -89,6 +91,11 @@ module.exports.init = function init(HANDLER_PATH){
 			});
 		}
 
+		// 失败处理
+		if(Context.state === 422){
+			return;
+		}
+
 		// 修改db中对应的状态
 		let query = {
 			command: 'change',
@@ -98,7 +105,9 @@ module.exports.init = function init(HANDLER_PATH){
 		yield new Promise(function(resolve, reject){
 			PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_SAVE, {Loader, query}, (err, data)=>{
 				if(err){
-					// TODO 异常处理
+					// 异常处理
+					Context.state = 409;
+					Context.body = err;
 					reject(err);
 				}else{
 
@@ -126,16 +135,21 @@ module.exports.init = function init(HANDLER_PATH){
 		try{
 			let dslDef = SafeEval('(' + dslString + ')');	// 解析js字符串
 
-			// 检查服务定义必填项 TODO TODO TODO dsl有效性校验逻辑
-			if( _.isPlainObject(dslDef)
-					|| !_.has(dslDef, 'name') || !_.isString(dslDef.name)
-					|| !_.has(dslDef, 'version') || !_.isNumber(dslDef.version)
-					|| !_.has(dslDef, 'priority') || !_.isNumber(dslDef.priority)
-					|| !_.has(dslDef, 'type')	|| !_.isString(dslDef.type)
-					|| !_.has(dslDef, 'method')	|| !_.isString(dslDef.method)
-			){
-				Context.state = 422;
-				Context.body = 'dsl format error';
+			// dsl有效性校验逻辑
+			yield new Promise(function(resolve, reject){
+				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
+					if(err || result.state !== true){	// 没有明确返回true就说明没有通过校验
+						// 异常处理
+						Context.state = 422;
+						Context.body = err || result.msg;
+						reject(err);
+					}else{
+						resolve();
+					}
+				});
+			});
+
+			if(Context.state === 422){
 				return;
 			}
 
@@ -143,7 +157,8 @@ module.exports.init = function init(HANDLER_PATH){
 			let query = {
 				command: 'find',
 				id: key
-			}
+			};
+
 			// 检查服务是否已存在
 			yield new Promise(function(resolve, reject){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, hasExist)=>{

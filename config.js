@@ -21,6 +21,7 @@ module.exports = {
 	"plugins": [	// 挂在相同HOOK的插件顺序很重要
 		"/StartProcessPlugin",	// 自带的默认插件，用于输出ASCII logo
 		"/StoragerPlugin",
+		"/Analyzer/AnalyzerPlugin",
 		"/TestPlugin",
 	]
 }

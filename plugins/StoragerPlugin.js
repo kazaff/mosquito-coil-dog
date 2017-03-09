@@ -74,11 +74,11 @@ StoragerPlugin.prototype.apply = function(PluginManager) {
 						}
 					});
 			}else if(query.command === 'find'){
-				db.hget('State', query.id, function(err, result){
+				db.hget('DSL', query.id, function(err, result){
 					if(err){
 						next(err);
 					}else{
-						next(null, !_.isNil(result));
+						next(null, result);
 					}
 				});
 			}

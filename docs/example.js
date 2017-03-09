@@ -10,10 +10,10 @@
 			"name": "totalTask",	// 任务名称在该工作流中必须唯一
 			"type": "rest",
 			"method": "get",
-			"location": "//xxxx/xxxx/{:a}",	// url中的参数会使用input属性中的定义的值
+			"domain": "http://xxxx/xxxx/{:a}",	// url中的参数会使用input属性中的定义的值
 			"header": {
 				"x-auth-token": "$.request.header.auth-token"	// 根据历史原因，若没有声明这个请求头，MCDog也会自动为所有rest型任务添加该请求头
-			}
+			},
 			"input": {
 				"a": "$.request.a"	// 值声明为jsonpath语法
 			},
@@ -38,7 +38,7 @@
 			"name": "listTask",
 			"type": "rest",
 			"method": "get",
-			"location": "//xxxx/xxxx/{:a}?page={:num}&sort={:column}",
+			"domain": "//xxxx/xxxx/{:a}?page={:num}&sort={:column}",	 // 地址中的参数默认MCDog会直接绑定请求中对应的变量，也可以在input中手动定义
 			"input": {
 				"a": "$.request.a",
 				"num": "$.request.num",
@@ -49,7 +49,7 @@
 					"name": "userTask",
 					"type": "rest",
 					"method": "get",
-					"location": "//xxxx/xxxx/{:uids}",
+					"domain": "//xxxx/xxxx/{:uids}",
 					"input": {
 						"uids": "$.output.listTask.list[*].uid"
 					},
@@ -84,7 +84,6 @@
 								}
 							}
 						}
-					}
 				},
 				{
 					"name": "checkCodeTask",	// 任务名称在该工作流中必须唯一
