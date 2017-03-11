@@ -27,9 +27,17 @@ AnalyzerPlugin.prototype.apply = function(PluginManager) {
 			}
 
 			if(_.has(dsl, 'tasks')){
-				// 串行({})还是并行([])
-				_.forEach(dsl.tasks, function(task){
-					return result = validate(task, _.capitalize(task.type));
+
+				let isSeries = false;
+				// 若串行({})，则需要将key赋给任务的name
+				if(_.isPlainObject(dsl.tasks)){
+					isSeries = true;
+				}
+
+				_.forEach(dsl.tasks, function(task, key){
+					if(isSeries){task.name = key;}
+					result = validate(task, _.capitalize(task.type));
+					return result.state;
 				});
 			}
 
@@ -38,6 +46,30 @@ AnalyzerPlugin.prototype.apply = function(PluginManager) {
 		}(dslDef, 'Outlayer'));
 
   });
+
+
+	// DSL解析HOOK
+	PluginManager.plugin(PluginManager.EVENTS.DSL_PARSE, function({Loader, dslDef}, next) {
+		let _ = Loader.get('Lodash');
+
+		// 递归解析任务
+		next(null, function parse(dsl, type){
+			let path = __dirname + '/Parser/' + type + 'Parser.js';	// 根据任务类型查找对应的解析器
+			if(!Fs.existsSync(path)){	// 若不存在对应类型的校验器，则直接忽略该任务的解析（包括其子任务）
+				return;
+			}
+			// 若该任务包含子任务，则先解析子任务(由内至外)
+			var tasks = {};	// 对于串行任务，必须保证其顺序
+			if(_.has(dsl, 'tasks')){
+				_.forEach(dsl.tasks, function(task, key){
+					tasks[key] = parse(task, _.capitalize(task.type));
+				});
+			}
+
+			return require(path)(dsl, tasks);
+
+		}(dslDef, 'Outlayer'));
+	});
 }
 
 module.exports = new AnalyzerPlugin();

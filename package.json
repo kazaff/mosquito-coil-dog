@@ -35,6 +35,7 @@
     "request": "^2.79.0",
     "rest-url": "0.0.4",
     "tapable": "^0.2.6",
+    "uglify-js": "^2.8.11",
     "walkdir": "0.0.11"
   }
 }

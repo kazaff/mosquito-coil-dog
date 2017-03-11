@@ -22,6 +22,15 @@ module.exports = function(dslDef){
 		};
 	}
 
+	if(_.has(dslDef, 'tasks')){
+		if(!_.isPlainObject(dslDef.tasks) && !_.isArray(dslDef.tasks)){
+			return {
+				state: false,
+				msg: dslDef.name + '\'s tasks attribute invalid'
+			};
+		}
+	}
+
 	// 若domain不是以//开头，则检查该domain是否合法
 	if(!_.startsWith(dslDef.domain, '//')){
 		let targetURL = URL.parse(dslDef.domain);

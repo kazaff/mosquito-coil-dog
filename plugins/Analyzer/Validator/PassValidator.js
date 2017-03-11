@@ -11,15 +11,29 @@ module.exports = function(dslDef){
 		};
 	}
 
-	// 若定义了output，则该项必须为对象
-	if(_.has(dslDef, 'output')){
-		if(!_.isPlainObject(dslDef.output)){
-			return {
-				state: false,
-				msg: dslDef.name + '\'s output attribute must be an object'
-			};
-		}
+	// 不能包含tasks定义
+	if(_.has(dslDef, 'tasks')){
+		return {
+			state: false,
+			msg: dslDef.name + ' must not have the \'tasks\' attribute'
+		};
 	}
+
+
+	if(!_.has(dslDef, 'output')){
+		return {
+			state: false,
+			msg: dslDef.name + '\'s output attribute must include output attribute'
+		};
+	}
+
+	if(!_.isPlainObject(dslDef.output)){
+		return {
+			state: false,
+			msg: dslDef.name + '\'s output attribute must be an object'
+		};
+	}
+
 
 	// 若定义了conditions，则该项必须为数组
 	if(_.has(dslDef, 'conditions')){

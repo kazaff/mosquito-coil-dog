@@ -2,6 +2,7 @@
 const Fs = require('fs');
 const Path = require('path');
 const Walkdir = require('walkdir');
+const SafeEval = require('notevil');
 // 定义相关路径
 const APP_PATH = __dirname;
 const CORE_PATH = APP_PATH + '/core';
@@ -72,19 +73,25 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_ONLINE, function({Loader, file
 		id: filename
 	};
 
-	PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, dslDef)=>{
+	PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, dslString)=>{
 
 		if(err) return next(err);
 
-		// 有效性检查
-		PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
-			if(err || result.state === false){
-				next(err, result);
-			}else{
-				// TODO 解析生成js文件
-					// TODO 服务注册
-			}
-		});
+		try{
+			let dslDef = SafeEval('(' + dslString + ')');	// 解析js字符串
+
+			// 有效性检查
+			PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
+				if(err || result.state === false){
+					next(err, result);
+				}else{
+					// TODO 解析生成js文件
+						// TODO 服务注册
+				}
+			});
+		}catch(e){
+			next(e);
+		}
 	});
 });
 

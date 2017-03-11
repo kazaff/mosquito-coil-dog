@@ -60,14 +60,7 @@
 									"users.length > 0"
 								],
 								"type": "function",
-								"defination": function(){	// 自定义函数会被MCDog封装到promise中，最后一个入参done接受一个参数：err
-									// 暂时不支持使用第三方类库，所以自定义函数体尽可能使用js原生语法，当然，MCDog会把常用的第三方库预置在全局对象中，例如：lodash, moment等
-									// 也可以通过框架插件机制将自己需要的第三方类库在MCDog初始化是加入全局对象中
-
-									// todo jsonpath解析时不支持函数定义携带任何参数，否则会报解析错误
-									var input = arguments[0];
-									var output = arguments[1];
-									var done = arguments[2];
+								"defination": function(input, output, done){	// 自定义函数会被MCDog封装到promise中，自定义函数体内不允许有setTimeout, setinterval, eval调用
 									for(var i = 0, max = input.list.length; i < max; i++){
 										for(var j = 0, inMax = input.users.length; j < inMax; j++){
 											if(input.list[i].uid === input.users[j].id){
@@ -76,6 +69,7 @@
 											}
 										}
 									}
+									// input和output参数使用时避免对其进行重新赋值，以免数据丢失
 									done();	// 必须回调该函数，否则会触发超时
 								},
 								"input": {
@@ -88,7 +82,7 @@
 				{
 					"name": "checkCodeTask",	// 任务名称在该工作流中必须唯一
 					"type": "pass",
-					"output": {	// 若不设置该属性，则会将输入参数原封不动返回，输入参数默认是上一层任务的输出数据
+					"output": {	// 该类型的任务必须包含output定义
 						"checkCode": "$.request.checkCode"
 					}
 				}
