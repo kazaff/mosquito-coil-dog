@@ -10,7 +10,7 @@ module.exports = function(dslDef, tasks){
 	// 生成input代码
 	if(_.has(dslDef, 'input')){
 		_.forOwn(dslDef.input, function(value, name){
-			if(_.startsWith(value, '$.')){
+			if(_.startsWith(value, '$.output.')){
 				codeString += 'input.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'input.' + name + '=' + value + ';';
@@ -51,7 +51,7 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'output')){
 		codeString += 'var tmp = {}';
 		_.forOwn(dslDef.output, function(value, name){
-			if(_.startsWith(value, '$.')){
+			if(_.startsWith(value, '$.output.')){
 				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'tmp.' + name + '=' + value + ';';

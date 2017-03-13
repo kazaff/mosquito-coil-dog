@@ -12,7 +12,7 @@ module.exports = function(dslDef){
 	}
 
 	_.forOwn(dslDef.output, function(value, name){
-		if(_.startsWith(value, '$.')){
+		if(_.startsWith(value, '$.output.')){
 			codeString += 'result.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 		}else{
 			codeString += 'result.' + name + '=' + value + ';';

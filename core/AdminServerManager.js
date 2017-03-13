@@ -66,12 +66,12 @@ module.exports.init = function init(HANDLER_PATH){
 		if(status === 1){	// 服务上线
 
 			yield new Promise(function(resolve, reject){
-				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_ONLINE, {Loader, filename}, (err)=>{
+				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_ONLINE, {Loader, filename}, (err, result)=>{
 					if(err || result.state !== true){	// 没有明确返回true就说明没有通过校验
 						// 异常处理
 						Context.state = 422;
-						Context.body = err || result.msg;
-						reject(err);
+						Context.body = result.msg || err;
+						reject( result.msg || err);
 					}else{
 						resolve();
 					}
@@ -80,7 +80,7 @@ module.exports.init = function init(HANDLER_PATH){
 
 		}else if(status === 0){	// 服务下线
 			yield new Promise(function(resolve, reject){
-				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_OFFLINE, {Loader, filename}, (err)=>{
+				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_OFFLINE, {Loader, filename}, (err, result)=>{
 					if(err){
 						// TODO 异常处理
 						reject(err);
@@ -141,8 +141,8 @@ module.exports.init = function init(HANDLER_PATH){
 					if(err || result.state !== true){	// 没有明确返回true就说明没有通过校验
 						// 异常处理
 						Context.state = 422;
-						Context.body = err || result.msg;
-						reject(err);
+						Context.body = result.msg || err;
+						reject(result.msg || err);
 					}else{
 						resolve();
 					}
@@ -201,9 +201,8 @@ module.exports.init = function init(HANDLER_PATH){
 			});
 
 		}catch(err){
-			console.log(err);
 			Context.state = 422;
-			Context.body = 'dsl format error';
+			Context.body = err;
 		}
 	}));
 

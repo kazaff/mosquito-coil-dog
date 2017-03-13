@@ -85,8 +85,23 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_ONLINE, function({Loader, file
 				if(err || result.state === false){
 					next(err, result);
 				}else{
-					// TODO 解析生成js文件
-						// TODO 服务注册
+					// 解析
+					PluginManager.applyPlugins(PluginManager.EVENTS.DSL_PARSE, {Loader, dslDef}, function(err, codeString){
+						if(err || _.isEmpty(codeString)){
+							next(err, {state:false, msg: 'parse error'});
+							return;
+						}
+
+						let meta = _.split(filename, '_');
+						let domain = _.join(_.dropRight(meta), '_');	// 注册表中服务的key为：type_method_name_version
+						let path = HANDLER_PATH + '/' + filename + '.js';
+						// 生成js文件
+						Fs.writeFileSync(path, codeString);
+						// 服务注册
+						let handler = require(path);
+						ServiceContainer[domain] = {meta, handler};
+						next(null, {state:true});
+					});
 				}
 			});
 		}catch(e){

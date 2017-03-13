@@ -2,7 +2,7 @@ let _ = require('lodash');
 
 module.exports = function(dslDef){
 
-	if( !_.isPlainObject(dslDef)
+	if( !_.isObjectLike(dslDef)
 			|| !_.has(dslDef, 'name') || !_.isString(dslDef.name)
 	){
 		return {
@@ -27,7 +27,7 @@ module.exports = function(dslDef){
 		};
 	}
 
-	if(!_.isPlainObject(dslDef.output)){
+	if(!_.isObjectLike(dslDef.output)){
 		return {
 			state: false,
 			msg: dslDef.name + '\'s output attribute must be an object'

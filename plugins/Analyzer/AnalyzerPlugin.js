@@ -30,7 +30,7 @@ AnalyzerPlugin.prototype.apply = function(PluginManager) {
 
 				let isSeries = false;
 				// 若串行({})，则需要将key赋给任务的name
-				if(_.isPlainObject(dsl.tasks)){
+				if(!_.isArray(dsl.tasks)){
 					isSeries = true;
 				}
 

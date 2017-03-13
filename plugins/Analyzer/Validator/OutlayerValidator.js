@@ -1,8 +1,9 @@
 let _ = require('lodash');
 
 module.exports = function(dslDef){
+
 	// 检查服务定义必填项
-	if( !_.isPlainObject(dslDef)
+	if( !_.isObjectLike(dslDef)
 			|| !_.has(dslDef, 'name') || !_.isString(dslDef.name)
 			|| !_.has(dslDef, 'version') || !_.isNumber(dslDef.version)
 			|| !_.has(dslDef, 'priority') || !_.isNumber(dslDef.priority)
@@ -16,7 +17,7 @@ module.exports = function(dslDef){
 		};
 	}
 
-	if(!_.isPlainObject(dslDef.tasks) && !_.isArray(dslDef.tasks)){
+	if(!_.isObjectLike(dslDef.tasks) && !_.isArray(dslDef.tasks)){
 		return {
 			state: false,
 			msg: 'service\'s tasks attribute invalid'
@@ -35,7 +36,7 @@ module.exports = function(dslDef){
 
 	// 若定义了output，则该项必须为对象
 	if(_.has(dslDef, 'output')){
-		if(!_.isPlainObject(dslDef.output)){
+		if(!_.isObjectLike(dslDef.output)){
 			return {
 				state: false,
 				msg: 'service\'s output attribute must be an object'
@@ -45,7 +46,7 @@ module.exports = function(dslDef){
 
 	// 若定义了setting，则该项必须为对象
 	if(_.has(dslDef, 'setting')){
-		if(!_.isPlainObject(dslDef.setting)){
+		if(!_.isObjectLike(dslDef.setting)){
 			return {
 				state: false,
 				msg: 'service\'s setting attribute must be an object'

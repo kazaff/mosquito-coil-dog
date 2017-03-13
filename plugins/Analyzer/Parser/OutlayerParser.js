@@ -41,7 +41,7 @@ module.exports = function(dslDef, tasks){
 	`;
 	if(_.has(dslDef, 'output')){	// 若定义了output，则需要清理输出数据
 		_.forOwn(dslDef.output, function(value, name){
-			if(_.startsWith(value, '$.')){
+			if(_.startsWith(value, '$.output.')){
 				codeString += 'result.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'result.' + name + '=' + value + ';';

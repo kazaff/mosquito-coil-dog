@@ -2,7 +2,7 @@ let _ = require('lodash');
 let U2 = require('uglify-js');
 
 module.exports = function(dslDef){
-	if( !_.isPlainObject(dslDef)
+	if( !_.isObjectLike(dslDef)
 			|| !_.has(dslDef, 'name') || !_.isString(dslDef.name)
 	){
 		return {
@@ -12,7 +12,7 @@ module.exports = function(dslDef){
 	}
 
 	if(_.has(dslDef, 'tasks')){
-		if(!_.isPlainObject(dslDef.tasks) && !_.isArray(dslDef.tasks)){
+		if(!_.isObjectLike(dslDef.tasks) && !_.isArray(dslDef.tasks)){
 			return {
 				state: false,
 				msg: dslDef.name + '\'s tasks attribute invalid'
@@ -64,7 +64,7 @@ module.exports = function(dslDef){
 
 	// 若定义input，则必须为对象
 	if(_.has(dslDef, 'input')){
-		if(!_.isPlainObject(dslDef.input)){
+		if(!_.isObjectLike(dslDef.input)){
 			return {
 				state: false,
 				msg: dslDef.name + '\'s input attribute must be an object'
@@ -73,7 +73,7 @@ module.exports = function(dslDef){
 	}
 
 	if(_.has(dslDef, 'output')){
-		if(!_.isPlainObject(dslDef.output)){
+		if(!_.isObjectLike(dslDef.output)){
 			return {
 				state: false,
 				msg: dslDef.name + '\'s output attribute must be an object'

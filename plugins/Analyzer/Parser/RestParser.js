@@ -14,7 +14,7 @@ module.exports = function(dslDef, tasks){
 	// 生成input代码
 	if(_.has(dslDef, 'input')){
 		_.forOwn(dslDef.input, function(value, name){
-			if(_.startsWith(value, '$.')){
+			if(_.startsWith(value, '$.output.')){
 				codeString += 'input.' + name + '=JP.query($,\'' + value + '\')[0];';		// jspath解析
 			}else{
 				codeString += 'input.' + name + '=' + value + ';';
@@ -39,7 +39,7 @@ module.exports = function(dslDef, tasks){
 			if(name === 'x-auth-token'){
 				hasAuth = true;
 			}
-			if(_.startsWith(value, '$.')){
+			if(_.startsWith(value, '$.output.')){
 				codeString += 'headers["' + name + '"]=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'headers["' + name + '"]=' + value + ';';
@@ -54,7 +54,7 @@ module.exports = function(dslDef, tasks){
 	// 生成body代码
 	if(_.has(dslDef, 'body')){
 		if(_.isString(dslDef.body)){
-			if(_.startsWith(dslDef.body, '$.')){
+			if(_.startsWith(dslDef.body, '$.output.')){
 				codeString += 'body=JP.query($,\'' + value + '\');';		// jspath解析
 			}else{
 				codeString += 'body=' + dslDef.body + ';';
@@ -97,23 +97,6 @@ module.exports = function(dslDef, tasks){
 			}
 			result=body;
 			resolve();
-		}).once('error', function(err){
-	`;
-
-	if(_.has(dslDef, 'retry')){
-		codeString += 'return retryComplate(err);';
-	}else{
-		codeString += `
-				if($.setting.error && $.setting.error.default){
-					result=$.setting.error.default;
-				}else{
-					result=err;
-				}
-				return resolve();
-		`;
-	}
-
-	codeString += `
 		});
 	`;
 
@@ -149,7 +132,7 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'output')){
 		codeString += 'var tmp = {};';
 		_.forOwn(dslDef.output, function(value, name){
-			if(_.startsWith(value, '$.')){
+			if(_.startsWith(value, '$.output.')){
 				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'tmp.' + name + '=' + value + ';';
