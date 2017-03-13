@@ -22,6 +22,16 @@ module.exports = function(dslDef){
 		};
 	}
 
+	// 若method为post或put，则必须包含body
+	if(_.indexOf(['post', 'put'], _.lowerCase(dslDef.method)) >= 0){
+		if(!_.has(dslDef, 'body')){
+			return {
+				state: false,
+				msg: dslDef.name + ' miss body attribute'
+			};
+		}
+	}
+
 	if(_.has(dslDef, 'tasks')){
 		if(!_.isPlainObject(dslDef.tasks) && !_.isArray(dslDef.tasks)){
 			return {
@@ -49,7 +59,6 @@ module.exports = function(dslDef){
 		}
 	}
 
-
 	// 若定义input，则必须为对象
 	if(_.has(dslDef, 'input')){
 		if(!_.isPlainObject(dslDef.input)){
@@ -60,12 +69,39 @@ module.exports = function(dslDef){
 		}
 	}
 
+	if(_.has(dslDef, 'output')){
+		if(!_.isPlainObject(dslDef.output)){
+			return {
+				state: false,
+				msg: dslDef.name + '\'s output attribute must be an object'
+			};
+		}
+	}
+
+	if(_.has(dslDef, 'header')){
+		if(!_.isPlainObject(dslDef.header)){
+			return {
+				state: false,
+				msg: dslDef.name + '\'s header attribute must be an object'
+			};
+		}
+	}
+
 	// 若定义了conditions，则该项必须为数组
 	if(_.has(dslDef, 'conditions')){
 		if(!_.isArray(dslDef.conditions)){
 			return {
 				state: false,
 				msg: dslDef.name + '\'s conditions attribute must be an array'
+			};
+		}
+	}
+
+	if(_.has(dslDef, 'retry')){
+		if(!_.isPlainObject(dslDef.retry)){
+			return {
+				state: false,
+				msg: dslDef.name + '\'s retry attribute must be an object'
 			};
 		}
 	}

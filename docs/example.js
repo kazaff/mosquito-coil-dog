@@ -10,9 +10,12 @@
 			"name": "totalTask",	// 任务名称在该工作流中必须唯一
 			"type": "rest",
 			"method": "get",
-			"domain": "http://xxxx/xxxx/{:a}",	// url中的参数会使用input属性中的定义的值
+			"domain": "http://xxxx/xxxx/:a",	// url中的参数会使用input属性中的定义的值
+			"body": {	// 该属性可以是对象，也可以是json字符串，若属性值以$.开头，则会进行jspath解析，若method为put或post，则必须包含body
+				'b': "$.request.form",	//	若属性值以$.开头，则会进行jspath解析
+			},
 			"header": {
-				"x-auth-token": "$.request.header.auth-token"	// 根据历史原因，若没有声明这个请求头，MCDog也会自动为所有rest型任务添加该请求头
+				"x-auth-token": "$.request.header['x-auth-token']"	// 根据历史原因，若没有声明这个请求头，MCDog也会自动为所有rest型任务添加该请求头
 			},
 			"input": {
 				"a": "$.request.a"	// 值声明为jsonpath语法
@@ -21,35 +24,26 @@
 				"total": "$.output.totalTask.total"
 			},
 			"timeout": 3000,	// 若不设置，则使用工作流默认的配置
-			"retry": [
-				{
-					"match": ["States.Timeout"],	// MCDog提供了常见异常类型，根据类型可以做匹配筛选
-					"interval": 2000,
-					"max": 2,
-					"backoff": 1.5
-				},
-				{
-					"match": ["States.ALL"],	// States.ALL 表示匹配所有错误类型
-					// 没有其它设置则表示不进行retry
-				}
-			],
+			"retry": {
+				"interval": 2000,
+				"times": 2
+			}
 		},
 		{
 			"name": "listTask",
 			"type": "rest",
 			"method": "get",
-			"domain": "//xxxx/xxxx/{:a}?page={:num}&sort={:column}",	 // 地址中的参数默认MCDog会直接绑定请求中对应的变量，也可以在input中手动定义
+			"domain": "//xxxx/xxxx/:a",	 // 地址中的参数默认MCDog会直接绑定请求中对应的变量，也可以在input中手动定义
 			"input": {
 				"a": "$.request.a",
-				"num": "$.request.num",
-				"column": "$.request.column"
+				"num": "$.request.num",	// 会以querystring方式添加在domain中
 			},
 			"tasks": [	// 外层任务执行完后才会执行嵌套的任务
 				{
 					"name": "userTask",
 					"type": "rest",
 					"method": "get",
-					"domain": "//xxxx/xxxx/{:uids}",
+					"domain": "//xxxx/xxxx/:uids",
 					"input": {
 						"uids": "$.output.listTask.list[*].uid"
 					},
@@ -96,14 +90,8 @@
 	"setting": {
 		"timeout": 5000,	// 若该工作流没有默认配置，则使用MCDog提供的对一个设置
 		"error": {	// 定义该工作流中所有任务的异常默认返回数据，若不设置，则将任务的异常结果原样输出
-			"timout": {
-				"code": 500,
-				"message": "timeout"
-			},
-			"default": {
-				"code": 500,
-				"message": "X error"
-			}
+			"timout": 'xxxxxxxx'
+			"default":'xxxxxxx'
 		}
 	}
 }

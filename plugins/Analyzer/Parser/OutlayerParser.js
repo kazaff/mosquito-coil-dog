@@ -42,7 +42,7 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'output')){	// 若定义了output，则需要清理输出数据
 		_.forOwn(dslDef.output, function(value, name){
 			if(_.startsWith(value, '$.')){
-				codeString += 'result.' + name + '=JP.query($,\'' + value + '\');';		// jspath解析
+				codeString += 'result.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'result.' + name + '=' + value + ';';
 			}
@@ -53,7 +53,11 @@ module.exports = function(dslDef, tasks){
 
 	return codeString + `
 			} catch (e) {
-	` + '$.output=e;' + `
+				if($.setting.error && $.setting.error.default){
+					$.output=$.setting.error.default;
+				}else{
+					$.output=e;
+				}
 			} finally {
 				done();
 			}

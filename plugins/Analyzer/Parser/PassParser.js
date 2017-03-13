@@ -13,7 +13,7 @@ module.exports = function(dslDef){
 
 	_.forOwn(dslDef.output, function(value, name){
 		if(_.startsWith(value, '$.')){
-			codeString += 'result.' + name + '=JP.query($,\'' + value + '\');';		// jspath解析
+			codeString += 'result.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 		}else{
 			codeString += 'result.' + name + '=' + value + ';';
 		}
@@ -27,7 +27,10 @@ module.exports = function(dslDef){
 
 	return codeString + `
 		} catch (e) {
-	` + '$.output.' + dslDef.name + '=e;' + `
+			if($.setting.error && $.setting.error.default){
+   ` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
+			}else{
+	 ` + '$.output.' + dslDef.name + '=e;' + `
 		} finally {
 			done();
 		}

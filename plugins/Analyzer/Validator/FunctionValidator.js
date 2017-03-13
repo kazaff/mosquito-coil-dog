@@ -72,12 +72,13 @@ module.exports = function(dslDef){
 		}
 	}
 
-	// 不允许定义了output
 	if(_.has(dslDef, 'output')){
-		return {
-			state: false,
-			msg: dslDef.name + '\' must not define the output attribute'
-		};
+		if(!_.isPlainObject(dslDef.output)){
+			return {
+				state: false,
+				msg: dslDef.name + '\'s output attribute must be an object'
+			};
+		}
 	}
 
 	// 若定义了conditions，则该项必须为数组

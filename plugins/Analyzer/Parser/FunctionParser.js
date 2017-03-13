@@ -11,7 +11,7 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'input')){
 		_.forOwn(dslDef.input, function(value, name){
 			if(_.startsWith(value, '$.')){
-				codeString += 'input.' + name + '=JP.query($,\'' + value + '\');';		// jspath解析
+				codeString += 'input.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
 			}else{
 				codeString += 'input.' + name + '=' + value + ';';
 			}
@@ -42,10 +42,23 @@ module.exports = function(dslDef, tasks){
 	// 自定义函数默认超时时间为3000
 	codeString += `
 }).timeout(3000)
-		.then(()=>{
+	.then(()=>{
 	`;
 
 	codeString += '$.output.' + dslDef.name + '=result;';
+
+	// output解析
+	if(_.has(dslDef, 'output')){
+		codeString += 'var tmp = {}';
+		_.forOwn(dslDef.output, function(value, name){
+			if(_.startsWith(value, '$.')){
+				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
+			}else{
+				codeString += 'tmp.' + name + '=' + value + ';';
+			}
+		});
+		codeString += '$.output.' + dslDef.name + '=tmp;';
+	}
 
 	// 子任务
 	if(_.has(dslDef, 'tasks')){
@@ -71,8 +84,19 @@ module.exports = function(dslDef, tasks){
 	}
 
 	return codeString + `
+		}).catch(Promise.TimeoutError, function(e) {
+			if($.setting.error && $.setting.error.timout){
+		` + '$.output.' + dslDef.name + '=$.setting.error.timout;' + `
+			}else{
+		` + '$.output.' + dslDef.name + '=e;' + `
+			}
+			done();
 		}).catch((e)=>{
- ` + '$.output.' + dslDef.name + '=e;' + `
+			if($.setting.error && $.setting.error.default){
+		` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
+			}else{
+		` + '$.output.' + dslDef.name + '=e;' + `
+			}
 			done();
 		});
 	}
