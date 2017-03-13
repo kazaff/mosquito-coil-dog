@@ -87,7 +87,7 @@ module.exports = function(dslDef, tasks){
 				if($.setting.error && $.setting.error.default){
 					result=$.setting.error.default;
 				}else{
-					result=e;
+					result=err;
 				}
 				return resolve();
 		`;
@@ -97,16 +97,33 @@ module.exports = function(dslDef, tasks){
 			}
 			result=body;
 			resolve();
+		}).once('error', function(err){
+	`;
+
+	if(_.has(dslDef, 'retry')){
+		codeString += 'return retryComplate(err);';
+	}else{
+		codeString += `
+				if($.setting.error && $.setting.error.default){
+					result=$.setting.error.default;
+				}else{
+					result=err;
+				}
+				return resolve();
+		`;
+	}
+
+	codeString += `
 		});
 	`;
 
 	if(_.has(dslDef, 'retry')){
-		codeString += `}, function(err, result){
+		codeString += `}, function(err){
 			if(err){
 				if($.setting.error && $.setting.error.default){
 			` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
 				}else{
-			` + '$.output.' + dslDef.name + '=e;' + `
+			` + '$.output.' + dslDef.name + '=err;' + `
 				}
 				resolve();
 			}
