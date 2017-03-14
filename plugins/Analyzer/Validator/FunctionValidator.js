@@ -46,7 +46,9 @@ module.exports = function(dslDef){
 		      && (node.expression.print_to_string() === 'setTimeout' || node.expression.print_to_string() === 'setTimeout' || node.expression.print_to_string() === 'setinterval' || node.expression.print_to_string() === 'eval')
 				){
 					ifErr = true;
-		  }
+		  }else if(node.name === 'require'){
+				ifErr = true;
+			}
 		}));
 	} catch (e) {
 		return {
