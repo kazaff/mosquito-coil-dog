@@ -38,6 +38,10 @@ PluginManager.applyPlugins(PluginManager.EVENTS.SYSTEM_BOOTSTRAP, LoaderManager,
 const ServiceContainer = {};	// 服务注册表容器
 // 扫描插件文件夹，依次加载相关服务
 Walkdir.sync(HANDLER_PATH, {no_recurse: true}, function(path, stat){
+
+	if(Path.extname(path) !== '.js'){
+		return;
+	}
 	// path由服务的type_method_name_version_priority组成
 	let filename = Path.basename(path, '.js');
 	let meta = _.split(filename, '_');
@@ -131,7 +135,7 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_OFFLINE, function({Loader, fil
 APIServerManager.init(ServiceContainer);
 
 // 初始化admin webserver
-if(Config.admin_server.ifActive)
+if(Config.admin_server.ifActive){
 	AdminServerManager.init(HANDLER_PATH);
 }
 
