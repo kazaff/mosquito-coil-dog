@@ -12,7 +12,7 @@ const HANDLER_PATH = APP_PATH + '/compiled_services';
 const LoaderManager = require('./core/LoaderManager.js');
 const Config = LoaderManager.load('Config', APP_PATH + '/config.js');// 载入配置文件
 const PluginManager = LoaderManager.load('Core.PluginManager', CORE_PATH + '/PluginManager.js');	// 初始化插件管理器
-LoaderManager.load('Core.WorkPoolManager', CORE_PATH + '/WorkPoolManager.js');	// 初始化工作池管理器
+const WorkPoolManager = LoaderManager.load('Core.WorkPoolManager', CORE_PATH + '/WorkPoolManager.js');	// 初始化工作池管理器
 const APIServerManager = LoaderManager.load('Core.APIServerManager', CORE_PATH + '/APIServerManager.js');
 const AdminServerManager =LoaderManager.load('Core.AdminServerManager', CORE_PATH + '/AdminServerManager.js');
 LoaderManager.load('Core.ContextManager', CORE_PATH + '/ContextManager.js');
@@ -133,3 +133,21 @@ APIServerManager.init(ServiceContainer);
 // 初始化admin webserver
 if(Config.admin_server.ifActive)
 	AdminServerManager.init(HANDLER_PATH);
+}
+
+// 配合pm2进行优雅重启
+process.on('SIGINT', function(){
+	// 停机HOOK
+	PluginManager.applyPlugins(PluginManager.EVENTS.SYSTEM_SHUTDOWN, LoaderManager, Config);
+	// 解绑所有已上线服务
+	_.forOwn(ServiceContainer, function(value, key){
+		ServiceContainer[key] = null;
+	});
+
+	setInterval(function(){
+		// 检查工作池是否为空
+		if(WorkPoolManager.idle()){
+			process.exit(0);
+		}
+	}, 2000);
+});

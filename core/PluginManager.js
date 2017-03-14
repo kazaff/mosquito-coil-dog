@@ -9,6 +9,7 @@ PluginManager.prototype = Object.create(Tapable.prototype);
 // 定义hooks，凡是标有“同步”的HOOK，暂时不推荐绑定任何异步逻辑，否则执行流可能非如你所愿
 PluginManager.prototype.EVENTS = {
 	SYSTEM_BOOTSTRAP: 'system_bootstrap',	// 系统初始化初期的HOOK，可用于加载依赖类库，同步 串行
+	SYSTEM_SHUTDOWN: 'system_shutdown', // 系统停机HOOK，同步 串行
 	DSL_VALIDATE: 'dsl_validate', // dsl 合法性校验的HOOK
 	DSL_PARSE: 'dsl_parse', // dsl 解析编译的HOOK
 	SERVICE_ONLINE: 'task_online', 	// 服务上线
