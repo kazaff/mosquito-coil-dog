@@ -56,7 +56,12 @@ AnalyzerPlugin.prototype.apply = function(PluginManager) {
 		next(null, function parse(dsl, type){
 			let path = __dirname + '/Parser/' + type + 'Parser.js';	// 根据任务类型查找对应的解析器
 			if(!Fs.existsSync(path)){	// 若不存在对应类型的校验器，则直接忽略该任务的解析（包括其子任务）
-				return;
+				return `
+					function($, done){
+						$.output.` + dsl.name + `={error:"task'type is not defined"};
+						done();
+					}
+				`;
 			}
 			// 若该任务包含子任务，则先解析子任务(由内至外)
 			var tasks = {};	// 对于串行任务，必须保证其顺序

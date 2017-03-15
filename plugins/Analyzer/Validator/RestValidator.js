@@ -41,23 +41,22 @@ module.exports = function(dslDef){
 		}
 	}
 
-	// 若domain不是以//开头，则检查该domain是否合法
-	if(!_.startsWith(dslDef.domain, '//')){
-		let targetURL = URL.parse(dslDef.domain);
-		if(_.indexOf(['http:', 'https:'], targetURL.protocol) < 0){
-			return {
-				state: false,
-				msg: dslDef.name + '\'s domain attribute have invalid protocol'
-			};
-		}
 
-		if(!_.isNull(targetURL.hash)){
-			return {
-				state: false,
-				msg: dslDef.name + '\'s domain attribute must not include anchor'
-			};
-		}
+	let targetURL = URL.parse(dslDef.domain);
+	if(_.indexOf(['http:', 'https:'], targetURL.protocol) < 0){
+		return {
+			state: false,
+			msg: dslDef.name + '\'s domain attribute have invalid protocol'
+		};
 	}
+
+	if(!_.isNull(targetURL.hash)){
+		return {
+			state: false,
+			msg: dslDef.name + '\'s domain attribute must not include anchor'
+		};
+	}
+
 
 	// 若定义input，则必须为对象
 	if(_.has(dslDef, 'input')){

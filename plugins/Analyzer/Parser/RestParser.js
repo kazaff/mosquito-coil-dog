@@ -9,15 +9,18 @@ module.exports = function(dslDef, tasks){
 			var input = {};
 			var headers = {};
 			var body = {};
+			$.output.` + dslDef.name + `={};
 	`;
 
 	// 生成input代码
 	if(_.has(dslDef, 'input')){
 		_.forOwn(dslDef.input, function(value, name){
 			if(_.startsWith(value, '$.output.')){
-				codeString += 'input.' + name + '=JP.query($,\'' + value + '\')[0];';		// jspath解析
-			}else{
+				codeString += 'input.' + name + '=JP.query($,\'' + value + '\');';		// jspath解析
+			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
 				codeString += 'input.' + name + '=' + value + ';';
+			}else{
+				codeString += 'input.' + name + '=$.' + value + ';';
 			}
 		});
 	}
@@ -40,14 +43,16 @@ module.exports = function(dslDef, tasks){
 				hasAuth = true;
 			}
 			if(_.startsWith(value, '$.output.')){
-				codeString += 'headers["' + name + '"]=JP.query($,`' + value + '`)[0];';		// jspath解析
-			}else{
+				codeString += 'headers["' + name + '"]=JP.query($,`' + value + '`);';		// jspath解析
+			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
 				codeString += 'headers["' + name + '"]=' + value + ';';
+			}else{
+				codeString += 'headers["' + name + '"]=$.' + value + ';';
 			}
 		});
 
 		if(!hasAuth){
-			codeString += `headers["x-auth-token"]=JP.query($, "$.request.header['x-auth-token']")[0];`;		// jspath解析
+			codeString += `headers["x-auth-token"]=$.request.header['x-auth-token'];`;
 		}
 	}
 
@@ -55,10 +60,24 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'body')){
 		if(_.isString(dslDef.body)){
 			if(_.startsWith(dslDef.body, '$.output.')){
-				codeString += 'body=JP.query($,\'' + value + '\');';		// jspath解析
-			}else{
+				codeString += 'body=JP.query($,`' + dslDef.body + '`);';		// jspath解析
+			}else if(_.startsWith(dslDef.body, '"') || _.startsWith(dslDef.body, "'")){
 				codeString += 'body=' + dslDef.body + ';';
+			}else{
+				codeString += 'body=$.' + dslDef.body + ';';
 			}
+		}else{
+			codeString += 'var tmp={};';
+			_.forOwn(dslDef.body, function(value, name){
+				if(_.startsWith(value, '$.output.')){
+					codeString += 'tmp.' + name + '=JP.query($,\'' + value + '\');';		// jspath解析
+				}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
+					codeString += 'tmp.' + name + '=' + value + ';';
+				}else{
+					codeString += 'tmp.' + name + '=$.' + value + ';';
+				}
+			});
+			codeString+= 'body=tmp;';
 		}
 	}
 
@@ -84,12 +103,14 @@ module.exports = function(dslDef, tasks){
 		codeString += 'return retryComplate(err);';
 	}else{
 		codeString += `
-				if($.setting.error && $.setting.error.default){
+				if(err.code === 'ETIMEDOUT' && $.setting.error && $.setting.error.timeout){
+					result=$.setting.error.timeout;
+				}else if($.setting.error && $.setting.error.default){
 					result=$.setting.error.default;
 				}else{
 					result=err;
 				}
-				return resolve();
+				return reject(err);
 		`;
 	}
 
@@ -104,11 +125,11 @@ module.exports = function(dslDef, tasks){
 		codeString += `}, function(err){
 			if(err){
 				if($.setting.error && $.setting.error.default){
-			` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
+			` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
 				}else{
-			` + '$.output.' + dslDef.name + '=err;' + `
+			` + '$.output.' + dslDef.name + '.error=err;' + `
 				}
-				resolve();
+				reject(err);
 			}
 		});`;
 	}
@@ -124,6 +145,7 @@ module.exports = function(dslDef, tasks){
 	// 自定义函数默认超时时间为3000
 	codeString += `
 }).then(()=>{
+	try{
 	`;
 
 	codeString += '$.output.' + dslDef.name + '=result;';
@@ -132,11 +154,25 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'output')){
 		codeString += 'var tmp = {};';
 		_.forOwn(dslDef.output, function(value, name){
-			if(_.startsWith(value, '$.output.')){
-				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
+			let key;
+			if(_.startsWith(value, '$')){
+				key = _.join(_.split(value, '.', 3),'.');
 			}else{
-				codeString += 'tmp.' + name + '=' + value + ';';
+				key = '$.' + _.join(_.split(value, '.', 2),'.');
 			}
+
+			codeString += `if(`+ key +`.error){
+				tmp.` + name + `=` + key + `.error;
+			}else{
+			`;
+			if(_.startsWith(value, '$.output.')){
+				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
+			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
+				codeString += 'tmp.' + name + '=' + value + ';';
+			}else{
+				codeString += 'tmp.' + name + '=$.' + value + ';';
+			}
+			codeString += '}';
 		});
 		codeString += '$.output.' + dslDef.name + '=tmp;';
 	}
@@ -155,7 +191,11 @@ module.exports = function(dslDef, tasks){
 			codeString += task + ',';
 		});
 
-		codeString += '], $, ()=>{';
+		codeString += `], $, (error)=>{
+			if(error){
+				return done(error);
+			}
+		`;
 	}
 
 	codeString += 'done();';
@@ -165,13 +205,17 @@ module.exports = function(dslDef, tasks){
 	}
 
 	return codeString + `
+		}catch(e){
+				 $.output.` + dslDef.name + `.error=e.toString();
+				 done(e);
+			}
 		}).catch((e)=>{
 			if($.setting.error && $.setting.error.default){
-		` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
+		` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
 			}else{
-		` + '$.output.' + dslDef.name + '=e;' + `
+		` + '$.output.' + dslDef.name + '.error=e.toString();' + `
 			}
-			done();
+			done(e);
 		});
 	}
 	`;

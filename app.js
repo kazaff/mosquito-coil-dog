@@ -80,8 +80,12 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_ONLINE, function({Loader, file
 	PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, dslString)=>{
 
 		if(err) return next(err);
-
 		try{
+
+			if(_.isNil(dslString)){
+				return next({msg:'service do not exist'});
+			}
+
 			let dslDef = SafeEval('(' + dslString + ')');	// 解析js字符串
 
 			// 有效性检查
@@ -102,6 +106,7 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_ONLINE, function({Loader, file
 						// 生成js文件
 						Fs.writeFileSync(path, codeString);
 						// 服务注册
+						delete require.cache[require.resolve(path)]; // 避免之前缓存
 						let handler = require(path);
 						ServiceContainer[domain] = {meta, handler};
 						next(null, {state:true});

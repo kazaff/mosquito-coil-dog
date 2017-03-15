@@ -4,6 +4,7 @@ module.exports = function(dslDef){
 	let codeString = `
 		function($, done){
 			var result = {};
+			$.output.` + dslDef.name + `={};
 			try{
 	`;
 
@@ -12,11 +13,25 @@ module.exports = function(dslDef){
 	}
 
 	_.forOwn(dslDef.output, function(value, name){
-		if(_.startsWith(value, '$.output.')){
-			codeString += 'result.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
+		let key;
+		if(_.startsWith(value, '$')){
+			key = _.join(_.split(value, '.', 3),'.');
 		}else{
-			codeString += 'result.' + name + '=' + value + ';';
+			key = '$.' + _.join(_.split(value, '.', 2),'.');
 		}
+
+		codeString += `if(`+ key +`.error){
+			result.` + name + `=` + key + `.error;
+		}else{
+		`;
+		if(_.startsWith(value, '$.output.')){
+			codeString += 'result.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
+		}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
+			codeString += 'result.' + name + '=' + value + ';';
+		}else{
+			codeString += 'result.' + name + '=$.' + value + ';';
+		}
+		codeString += '}';
 	});
 
 	if(_.has(dslDef, 'conditions')){
@@ -28,9 +43,10 @@ module.exports = function(dslDef){
 	return codeString + `
 		} catch (e) {
 			if($.setting.error && $.setting.error.default){
-   ` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
+   ` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
 			}else{
-	 ` + '$.output.' + dslDef.name + '=e;' + `
+	 ` + '$.output.' + dslDef.name + '.error=e.toString();' + `
+			}
 		} finally {
 			done();
 		}

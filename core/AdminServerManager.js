@@ -48,12 +48,12 @@ module.exports.init = function init(HANDLER_PATH){
 			PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, data)=>{
 				if(err){
 					// TODO 异常处理
-					reject(err);
+					Context.status = 422;
+					Context.body = err;
 				}else{
-
 					Context.body = data;
-					resolve();
 				}
+				resolve();
 			});
 		});
 	}));
@@ -69,12 +69,10 @@ module.exports.init = function init(HANDLER_PATH){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_ONLINE, {Loader, filename}, (err, result)=>{
 					if(err || result.state !== true){	// 没有明确返回true就说明没有通过校验
 						// 异常处理
-						Context.state = 422;
-						Context.body = result.msg || err;
-						reject( result.msg || err);
-					}else{
-						resolve();
+						Context.status = 422;
+						Context.body = err || result.msg;
 					}
+					resolve();
 				});
 			});
 
@@ -82,17 +80,17 @@ module.exports.init = function init(HANDLER_PATH){
 			yield new Promise(function(resolve, reject){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.SERVICE_OFFLINE, {Loader, filename}, (err, result)=>{
 					if(err){
-						// TODO 异常处理
-						reject(err);
-					}else{
-						resolve();
+						// 异常处理
+						Context.status = 422;
+						Context.body = err || result.msg;
 					}
+					resolve();
 				});
 			});
 		}
 
 		// 失败处理
-		if(Context.state === 422){
+		if(Context.status === 422){
 			return;
 		}
 
@@ -106,15 +104,13 @@ module.exports.init = function init(HANDLER_PATH){
 			PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_SAVE, {Loader, query}, (err, data)=>{
 				if(err){
 					// 异常处理
-					Context.state = 409;
+					Context.status = 422;
 					Context.body = err;
-					reject(err);
 				}else{
-
-					Context.state = 200;
+					Context.status = 200;
 					Context.body = '';	// 占位符
-					resolve();
 				}
+				resolve();
 			});
 		});
 	}));
@@ -126,12 +122,12 @@ module.exports.init = function init(HANDLER_PATH){
 
 		// 请求body不允许为空
 		if(_.isUndefined(Context.request.body)){
-			Context.state = 422;
+			Context.status = 422;
 			Context.body = 'dsl format error';
 			return;
 		}
 
-		let dslString = Context.request.body.replace(/\n|\r|\t/g,"");	// 去掉所有制表符
+		let dslString = Context.request.body;	// 去掉所有制表符
 		try{
 			let dslDef = SafeEval('(' + dslString + ')');	// 解析js字符串
 
@@ -140,16 +136,14 @@ module.exports.init = function init(HANDLER_PATH){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
 					if(err || result.state !== true){	// 没有明确返回true就说明没有通过校验
 						// 异常处理
-						Context.state = 422;
-						Context.body = result.msg || err;
-						reject(result.msg || err);
-					}else{
-						resolve();
+						Context.status = 422;
+						Context.body = err || result.msg;
 					}
+					resolve();
 				});
 			});
 
-			if(Context.state === 422){
+			if(Context.status === 422){
 				return;
 			}
 
@@ -163,19 +157,20 @@ module.exports.init = function init(HANDLER_PATH){
 			yield new Promise(function(resolve, reject){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_READ, {Loader, query}, (err, hasExist)=>{
 					if(err){
-						// TODO 异常处理
-						reject(err);
+						// 异常处理
+						Context.status = 409;
+						Context.body = err;
 					}else{
 						if(hasExist){
-							Context.state = 409;
+							Context.status = 409;
 							Context.body = 'service has been exist';
 						}
-						resolve();
 					}
+					resolve();
 				});
 			});
 
-			if(Context.state === 409){
+			if(Context.status === 409){
 				return;
 			}
 
@@ -189,19 +184,21 @@ module.exports.init = function init(HANDLER_PATH){
 			yield new Promise(function(resolve, reject){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_SAVE, {Loader, query}, (err, data)=>{
 					if(err){
-						// TODO 异常处理
-						reject(err);
+						// 异常处理
+						Context.status = 500;
+						Context.body = err;
 					}else{
 
-						Context.state = 200;
+						Context.status = 200;
 						Context.body = '';	// 占位符
-						resolve();
 					}
+					resolve();
 				});
 			});
 
 		}catch(err){
-			Context.state = 422;
+			console.log(err);
+			Context.status = 422;
 			Context.body = err;
 		}
 	}));
@@ -217,18 +214,19 @@ module.exports.init = function init(HANDLER_PATH){
 		yield new Promise(function(resolve, reject){
 			PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.STORAGE_SAVE, {Loader, query}, (err)=>{
 				if(err){
-					// TODO 异常处理
-					reject(err);
+					// 异常处理
+					Context.status = 500;
+					Context.body = err;
 				}else{
 
 					// 清理对应文件
 					if(Fs.existsSync(HANDLER_PATH + '/' + path + '.js'))
 						Fs.unlinkSync(HANDLER_PATH + '/' + path + '.js');
 
-					Context.state = 200;
+					Context.status = 200;
 					Context.body = '';	// 占位符
-					resolve();
 				}
+				resolve();
 			});
 		});
 	}));

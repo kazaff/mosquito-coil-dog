@@ -36,16 +36,30 @@ module.exports = function(dslDef, tasks){
 		codeString += task + ',';
 	});
 
-	codeString += `], $, ()=>{
+	codeString += `], $, (error)=>{
 		try{
 	`;
 	if(_.has(dslDef, 'output')){	// 若定义了output，则需要清理输出数据
 		_.forOwn(dslDef.output, function(value, name){
-			if(_.startsWith(value, '$.output.')){
-				codeString += 'result.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
+			let key;
+			if(_.startsWith(value, '$')){
+				key = _.join(_.split(value, '.', 3),'.');
 			}else{
-				codeString += 'result.' + name + '=' + value + ';';
+				key = '$.' + _.join(_.split(value, '.', 2),'.');
 			}
+			
+			codeString += `if(`+ key +`.error){
+				result.` + name + `=` + key + `.error;
+			}else{
+			`;
+			if(_.startsWith(value, '$.output.')){
+				codeString += 'result.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
+			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
+				codeString += 'result.' + name + '=' + value + ';';
+			}else{
+				codeString += 'result.' + name + '=$.' + value + ';';
+			}
+			codeString += '}';
 		});
 
 		codeString += '$.output=result;';
@@ -53,13 +67,14 @@ module.exports = function(dslDef, tasks){
 
 	return codeString + `
 			} catch (e) {
+				error = e;
 				if($.setting.error && $.setting.error.default){
 					$.output=$.setting.error.default;
 				}else{
-					$.output=e;
+					$.output=e.toString();
 				}
 			} finally {
-				done();
+				done(error);
 			}
 		});
 	}

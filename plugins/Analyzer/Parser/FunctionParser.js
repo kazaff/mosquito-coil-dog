@@ -3,17 +3,20 @@ let _ = require('lodash');
 module.exports = function(dslDef, tasks){
 	let codeString = `
 		function($, done){
-			var result = {};
-			var input = {};
+			var result={};
+			var input={};
+			$.output.` + dslDef.name + `={};
 	`;
 
 	// 生成input代码
 	if(_.has(dslDef, 'input')){
 		_.forOwn(dslDef.input, function(value, name){
 			if(_.startsWith(value, '$.output.')){
-				codeString += 'input.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
-			}else{
+				codeString += 'input.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
+			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
 				codeString += 'input.' + name + '=' + value + ';';
+			}else{
+				codeString += 'input.' + name + '=$.' + value + ';';
 			}
 		});
 	}
@@ -43,6 +46,7 @@ module.exports = function(dslDef, tasks){
 	codeString += `
 }).timeout(3000)
 	.then(()=>{
+		try{
 	`;
 
 	codeString += '$.output.' + dslDef.name + '=result;';
@@ -51,11 +55,25 @@ module.exports = function(dslDef, tasks){
 	if(_.has(dslDef, 'output')){
 		codeString += 'var tmp = {}';
 		_.forOwn(dslDef.output, function(value, name){
-			if(_.startsWith(value, '$.output.')){
-				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`)[0];';		// jspath解析
+			let key;
+			if(_.startsWith(value, '$')){
+				key = _.join(_.split(value, '.', 3),'.');
 			}else{
-				codeString += 'tmp.' + name + '=' + value + ';';
+				key = '$.' + _.join(_.split(value, '.', 2),'.');
 			}
+			
+			codeString += `if(`+ key +`.error){
+				tmp.` + name + `=` + key + `.error;
+			}else{
+			`;
+			if(_.startsWith(value, '$.output.')){
+				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
+			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
+				codeString += 'tmp.' + name + '=' + value + ';';
+			}else{
+				codeString += 'tmp.' + name + '=$.' + value + ';';
+			}
+			codeString += '}';
 		});
 		codeString += '$.output.' + dslDef.name + '=tmp;';
 	}
@@ -74,7 +92,11 @@ module.exports = function(dslDef, tasks){
 			codeString += task + ',';
 		});
 
-		codeString += '], $, ()=>{';
+		codeString += `], $, (error)=>{
+			if(error){
+				return done(error);
+			}
+		`;
 	}
 
 	codeString += 'done();';
@@ -84,20 +106,24 @@ module.exports = function(dslDef, tasks){
 	}
 
 	return codeString + `
+			}catch(e){
+				 $.output.` + dslDef.name + `.error=e;
+				 done(e);
+			}
 		}).catch(Promise.TimeoutError, function(e) {
 			if($.setting.error && $.setting.error.timout){
-		` + '$.output.' + dslDef.name + '=$.setting.error.timout;' + `
+		` + '$.output.' + dslDef.name + '.error=$.setting.error.timout;' + `
 			}else{
-		` + '$.output.' + dslDef.name + '=e;' + `
+		` + '$.output.' + dslDef.name + '.error=e.toString();' + `
 			}
-			done();
+			done(e);
 		}).catch((e)=>{
 			if($.setting.error && $.setting.error.default){
-		` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
+		` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
 			}else{
-		` + '$.output.' + dslDef.name + '=e;' + `
+		` + '$.output.' + dslDef.name + '.error=e.toString();' + `
 			}
-			done();
+			done(e);
 		});
 	}
 	`;

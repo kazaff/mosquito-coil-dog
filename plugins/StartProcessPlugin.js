@@ -17,6 +17,7 @@ StartProcessPlugin.prototype.apply = function(PluginManager) {
 					console.log(chalk.bgCyan('Admin Server:') + ' ' + chalk.underline('http://' + Config.admin_server.host + ':' + Config.admin_server.port + '/'));
 					console.log(chalk.bgCyan('account:') + ' ' +  Config.admin_server.user);
 					console.log(chalk.bgCyan('password:') + ' ' + Config.admin_server.password);
+					console.log('\r\n');
 				}
 
     });
