@@ -51,3 +51,7 @@ MCDog现在还很简陋，未来会根据其实际使用情况来逐步完善。
 - 异常处理比较粗糙，影响最终响应结果的可预测性，错误提醒不足够人性化
 
 至于功能扩展方面，可以参考[wiki](https://github.com/kazaff/mosquito-coil-dog/wiki)。
+
+### LOGO
+
+![](https://github.com/kazaff/mosquito-coil-dog/blob/master/docs/logo.png)
