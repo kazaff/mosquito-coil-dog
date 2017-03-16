@@ -14,24 +14,31 @@ module.exports = function(dslDef){
 
 	_.forOwn(dslDef.output, function(value, name){
 		let key;
-		if(_.startsWith(value, '$')){
+		if(_.startsWith(value, '$.')){
 			key = _.join(_.split(value, '.', 3),'.');
 		}else{
 			key = '$.' + _.join(_.split(value, '.', 2),'.');
 		}
 
-		codeString += `if(`+ key +`.error){
-			result.` + name + `=` + key + `.error;
-		}else{
+		codeString += `
+		if(` + key + `){
+			if(`+ key +`.error){
+				result.` + name + `=` + key + `.error;
+			}else{
 		`;
 		if(_.startsWith(value, '$.output.')){
 			codeString += 'result.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
 		}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
 			codeString += 'result.' + name + '=' + value + ';';
 		}else{
-			codeString += 'result.' + name + '=$.' + value + ';';
+			codeString += 'result.' + name + '=_.get($, `' + value + '`);';
 		}
-		codeString += '}';
+		codeString += `
+			}
+		}else{
+			result.` + name + `={error: 424, msg:'` + _.split(key, '.', 3)[2] + ` had not be ran'};
+		}
+		`;
 	});
 
 	if(_.has(dslDef, 'conditions')){

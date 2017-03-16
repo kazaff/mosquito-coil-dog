@@ -16,7 +16,8 @@ module.exports = function(dslDef, tasks){
 			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
 				codeString += 'input.' + name + '=' + value + ';';
 			}else{
-				codeString += 'input.' + name + '=$.' + value + ';';
+				codeString += `
+				input.` + name + '=_.get($, `' + value + '`);';
 			}
 		});
 	}
@@ -56,24 +57,30 @@ module.exports = function(dslDef, tasks){
 		codeString += 'var tmp = {}';
 		_.forOwn(dslDef.output, function(value, name){
 			let key;
-			if(_.startsWith(value, '$')){
+			if(_.startsWith(value, '$.')){
 				key = _.join(_.split(value, '.', 3),'.');
 			}else{
 				key = '$.' + _.join(_.split(value, '.', 2),'.');
 			}
-			
-			codeString += `if(`+ key +`.error){
-				tmp.` + name + `=` + key + `.error;
-			}else{
+			codeString += `
+			if(` + key + `){
+				if(`+ key +`.error){
+					tmp.` + name + `=` + key + `.error;
+				}else{
 			`;
 			if(_.startsWith(value, '$.output.')){
 				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
 			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
 				codeString += 'tmp.' + name + '=' + value + ';';
 			}else{
-				codeString += 'tmp.' + name + '=$.' + value + ';';
+				codeString += 'tmp.' + name + '=_.get($, `' + value + '`);';
 			}
-			codeString += '}';
+			codeString += `
+				}
+			}else{
+				tmp.` + name + `={error: 424, msg:'` + _.split(key, '.', 3)[2] + ` had not be ran'};
+			}
+			`;
 		});
 		codeString += '$.output.' + dslDef.name + '=tmp;';
 	}
