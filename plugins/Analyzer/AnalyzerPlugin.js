@@ -5,8 +5,17 @@ AnalyzerPlugin.prototype.apply = function(PluginManager) {
 	// DSL校验HOOK
 	PluginManager.plugin(PluginManager.EVENTS.DSL_VALIDATE, function({Loader, dslDef}, next) {
 		let _ = Loader.get('Lodash');
+		let namespaces = {};
+		next(null, function validate(dsl, type, namespaces){
 
-		next(null, function validate(dsl, type){
+			if(namespaces[dsl.name]){
+				return {
+					state: false,
+					msg: dsl.name + ' name conflict'
+				};
+			}
+
+			namespaces[dsl.name] = 1;
 
 			let result = {
 				state: false,
@@ -36,14 +45,14 @@ AnalyzerPlugin.prototype.apply = function(PluginManager) {
 
 				_.forEach(dsl.tasks, function(task, key){
 					if(isSeries){task.name = key;}
-					result = validate(task, _.capitalize(task.type));
+					result = validate(task, _.capitalize(task.type), namespaces);
 					return result.state;
 				});
 			}
 
 			return result;
 
-		}(dslDef, 'Outlayer'));
+		}(dslDef, 'Outlayer', namespaces));
 
   });
 
