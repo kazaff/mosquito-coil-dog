@@ -31,7 +31,7 @@ let handler = function *(path){
 
 
 	// 解析url参数，查找对应的服务handler
-	let key = 'rest_' + _.toLower(context.method) + '_' + path + '_' + context.header.version;
+	let key = 'rest_' + _.toLower(context.method) + '_' + path + '_' + (context.header.version ? context.header.version : 1);
 
 	if(!_.isNil(Services[key])){
 		let service = Services[key];

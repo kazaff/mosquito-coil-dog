@@ -128,9 +128,18 @@ module.exports.init = function init(HANDLER_PATH){
 		}
 
 		let dslString = Context.request.body;	// 去掉所有制表符
-		try{
-			let dslDef = SafeEval('(' + dslString + ')');	// 解析js字符串
 
+		try {
+			SafeEval('(' + dslString + ')');	// 解析js字符串，检查是否存在语法错误
+		} catch (err) {
+			Context.status = 422;
+			Context.body = 'DSL ' + err.toString();
+			return;
+		}
+
+		let dslDef = eval('(' + dslString + ')');	// 解析js字符串
+
+		try{
 			// dsl有效性校验逻辑
 			yield new Promise(function(resolve, reject){
 				PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
@@ -197,9 +206,8 @@ module.exports.init = function init(HANDLER_PATH){
 			});
 
 		}catch(err){
-			console.log(err);
 			Context.status = 422;
-			Context.body = err;
+			Context.body = err.toString();
 		}
 	}));
 

@@ -2,7 +2,6 @@
 const Fs = require('fs');
 const Path = require('path');
 const Walkdir = require('walkdir');
-const SafeEval = require('notevil');
 // 定义相关路径
 const APP_PATH = __dirname;
 const CORE_PATH = APP_PATH + '/core';
@@ -86,7 +85,7 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_ONLINE, function({Loader, file
 				return next({msg:'service do not exist'});
 			}
 
-			let dslDef = SafeEval('(' + dslString + ')');	// 解析js字符串
+			let dslDef = eval('(' + dslString + ')');	// 解析js字符串
 
 			// 有效性检查
 			PluginManager.applyPluginsAsyncWaterfall(PluginManager.EVENTS.DSL_VALIDATE, {Loader, dslDef}, (err, result)=>{
