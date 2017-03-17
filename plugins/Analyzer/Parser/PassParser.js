@@ -45,7 +45,7 @@ module.exports = function(dslDef){
 		codeString += '}';
 	}
 
-	codeString += '$.output.' + dslDef.name + '=result;';
+	codeString += '$.output.' + dslDef.name + '.data=result;';
 
 	return codeString + `
 		} catch (e) {

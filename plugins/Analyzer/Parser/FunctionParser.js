@@ -50,7 +50,7 @@ module.exports = function(dslDef, tasks){
 		try{
 	`;
 
-	codeString += '$.output.' + dslDef.name + '=result;';
+	codeString += '$.output.' + dslDef.name + '.data=result;';
 
 	// output解析
 	if(_.has(dslDef, 'output')){

@@ -69,7 +69,7 @@ module.exports = function(dslDef, tasks){
 			`;
 		});
 
-		codeString += '$.output=result;';
+		codeString += '$.output.data=result;';
 	}
 
 	return codeString + `
