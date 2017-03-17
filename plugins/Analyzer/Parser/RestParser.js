@@ -37,8 +37,9 @@ module.exports = function(dslDef, tasks){
 
 
 	// 生成headers代码
+	let hasAuth = false;
 	if(_.has(dslDef, 'header')){
-		let hasAuth = false;
+
 		_.forOwn(dslDef.header, function(value, name){
 			if(name === 'x-auth-token'){
 				hasAuth = true;
@@ -51,10 +52,9 @@ module.exports = function(dslDef, tasks){
 				codeString += 'headers["' + name + '"]=_.get($, `' + value + '`);';
 			}
 		});
-
-		if(!hasAuth){
-			codeString += `headers["x-auth-token"]=$.request.header['x-auth-token'];`;
-		}
+	}
+	if(!hasAuth){
+		codeString += `headers["x-auth-token"]=$.request.header['x-auth-token'];`;
 	}
 
 	// 生成body代码
