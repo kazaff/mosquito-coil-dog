@@ -51,9 +51,23 @@ module.exports = function(dslDef, tasks){
 			codeString += `
 			if(` + key + `){
 				if(`+ key +`.error){
-					result.` + name + `=` + key + `.error;
+					result.` + name + `=` + key + `;
+				}else if(`;
+
+			let tmp = _.split(_.split(_.trimStart(value, '$.'), '[', 1), '.', 4);
+			if(tmp.length === 4){
+				tmp = _.join(tmp, '.');
+				codeString += tmp + '.error';
+			}else{
+				tmp = '"never be run this line~"';
+				codeString += 'false'
+			}
+
+			codeString += `){
+					result.` + name + `=` + tmp + `;
 				}else{
 			`;
+
 			if(_.startsWith(value, '$.output.')){
 				codeString += 'result.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
 			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
@@ -61,6 +75,7 @@ module.exports = function(dslDef, tasks){
 			}else{
 				codeString += 'result.' + name + '=_.get($, `' + value + '`);';
 			}
+
 			codeString += `
 				}
 			}else{
@@ -76,9 +91,9 @@ module.exports = function(dslDef, tasks){
 			} catch (e) {
 				error = e;
 				if($.setting.error && $.setting.error.default){
-					$.output=$.setting.error.default;
+					$.output.data=$.setting.error.default;
 				}else{
-					$.output=e.toString();
+					$.output.data={error: 503, msg: e.toString()};
 				}
 			} finally {
 				done(error);

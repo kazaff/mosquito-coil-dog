@@ -23,9 +23,23 @@ module.exports = function(dslDef){
 		codeString += `
 		if(` + key + `){
 			if(`+ key +`.error){
-				result.` + name + `=` + key + `.error;
+				result.` + name + `=` + key + `;
+			}else if(`;
+
+		let tmp = _.split(_.split(_.trimStart(value, '$.'), '[', 1), '.', 4);
+		if(tmp.length === 4){
+			tmp = _.join(tmp, '.');
+			codeString += tmp + '.error';
+		}else{
+			tmp = '"never be run this line~"';
+			codeString += 'false'
+		}
+
+		codeString += `){
+				result.` + name + `=` + tmp + `;
 			}else{
 		`;
+
 		if(_.startsWith(value, '$.output.')){
 			codeString += 'result.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
 		}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
@@ -33,6 +47,7 @@ module.exports = function(dslDef){
 		}else{
 			codeString += 'result.' + name + '=_.get($, `' + value + '`);';
 		}
+
 		codeString += `
 			}
 		}else{
@@ -50,9 +65,9 @@ module.exports = function(dslDef){
 	return codeString + `
 		} catch (e) {
 			if($.setting.error && $.setting.error.default){
-   ` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
+   ` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
 			}else{
-	 ` + '$.output.' + dslDef.name + '.error=e.toString();' + `
+	 ` + '$.output.' + dslDef.name + '={error:503, e.toString()};' + `
 			}
 		} finally {
 			done();

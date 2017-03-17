@@ -109,7 +109,7 @@ module.exports = function(dslDef, tasks){
 				}else if($.setting.error && $.setting.error.default){
 					result=$.setting.error.default;
 				}else{
-					result=err;
+					result={error: 503, msg: err.toString()};
 				}
 				return reject(err);
 		`;
@@ -126,9 +126,9 @@ module.exports = function(dslDef, tasks){
 		codeString += `}, function(err){
 			if(err){
 				if($.setting.error && $.setting.error.default){
-			` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
+			` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
 				}else{
-			` + '$.output.' + dslDef.name + '.error=err;' + `
+			` + '$.output.' + dslDef.name + '={error: 503, msg:err.toString()};' + `
 				}
 				reject(err);
 			}
@@ -165,9 +165,23 @@ module.exports = function(dslDef, tasks){
 			codeString += `
 			if(` + key + `){
 				if(`+ key +`.error){
-					tmp.` + name + `=` + key + `.error;
+					result.` + name + `=` + key + `;
+				}else if(`;
+
+			let tmp = _.split(_.split(_.trimStart(value, '$.'), '[', 1), '.', 4);
+			if(tmp.length === 4){
+				tmp = _.join(tmp, '.');
+				codeString += tmp + '.error';
+			}else{
+				tmp = '"never be run this line~"';
+				codeString += 'false'
+			}
+
+			codeString += `){
+					result.` + name + `=` + tmp + `;
 				}else{
 			`;
+
 			if(_.startsWith(value, '$.output.')){
 				codeString += 'tmp.' + name + '=JP.query($,`' + value + '`);';		// jspath解析
 			}else if(_.startsWith(value, '"') || _.startsWith(value, "'")){
@@ -175,6 +189,7 @@ module.exports = function(dslDef, tasks){
 			}else{
 				codeString += 'tmp.' + name + '=_.get($, `' + value + '`);';
 			}
+
 			codeString += `
 				}
 			}else{
@@ -214,14 +229,14 @@ module.exports = function(dslDef, tasks){
 
 	return codeString + `
 		}catch(e){
-				 $.output.` + dslDef.name + `.error=e.toString();
+				 $.output.` + dslDef.name + `={error: 503, msg: e.toString()};
 				 done(e);
 			}
 		}).catch((e)=>{
 			if($.setting.error && $.setting.error.default){
-		` + '$.output.' + dslDef.name + '.error=$.setting.error.default;' + `
+		` + '$.output.' + dslDef.name + '=$.setting.error.default;' + `
 			}else{
-		` + '$.output.' + dslDef.name + '.error=e.toString();' + `
+		` + '$.output.' + dslDef.name + '={error: 503, msg: e.toString()};' + `
 			}
 			done(e);
 		});
