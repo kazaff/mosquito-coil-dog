@@ -239,5 +239,10 @@ module.exports.init = function init(HANDLER_PATH){
 		});
 	}));
 
+	// 管理后台帐号认证，仅仅是为了前端请求用，请求能执行到这里就已经意味着basic认证已通过
+	AdminServer.use(KoaRoute.post('/login', function *(){
+		this.body = '';
+	}));
+
 	AdminServer.listen(Config.admin_server.port, Config.admin_server.host);
 };

@@ -29,16 +29,19 @@ module.exports = function(dslDef){
 		let tmp = _.split(_.split(_.trimStart(value, '$.'), '[', 1), '.', 4);
 		if(tmp.length === 4){
 			tmp = _.join(tmp, '.');
-			codeString += tmp + '.error';
+			codeString += '_.get($, `' + tmp + '.error`)';
+			codeString += `){
+					result.` + name + `=$.` + tmp + `;
+				}else{
+			`;
 		}else{
-			tmp = '"never be run this line~"';
+			tmp = '';
 			codeString += 'false'
+			codeString += `){
+					result.` + name + `="never be run this line~";
+				}else{
+			`;
 		}
-
-		codeString += `){
-				result.` + name + `=` + tmp + `;
-			}else{
-		`;
 
 		if(_.startsWith(value, '$.output.')){
 			codeString += 'result.' + name + '=JP.query($,`' + value + '`);';		// jspath解析

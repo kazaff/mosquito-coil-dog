@@ -125,12 +125,12 @@ PluginManager.plugin(PluginManager.EVENTS.SERVICE_OFFLINE, function({Loader, fil
 	let path = HANDLER_PATH + '/' + filename + '.js';
 
 	ServiceContainer[domain] = null;
-	// 移除已加载的代码
-	delete require.cache[require.resolve(path)];
 
-	// 删除文件
-	if(Fs.existsSync(path))
-		Fs.unlinkSync(path);
+	if(Fs.existsSync(path)){
+		delete require.cache[require.resolve(path)];// 移除已加载的代码
+		Fs.unlinkSync(path);// 删除文件
+	}
+
 
 	next();
 });
