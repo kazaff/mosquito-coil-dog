@@ -17,6 +17,13 @@ module.exports = function(dslDef){
 		};
 	}
 
+	if(!/^[a-z0-9]*$/.test(dslDef.name)){
+		return {
+			state: false,
+			msg: 'service name fomart error'
+		}
+	}
+
 	if(!_.isObjectLike(dslDef.tasks) && !_.isArray(dslDef.tasks)){
 		return {
 			state: false,

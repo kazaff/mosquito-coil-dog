@@ -123,11 +123,11 @@ module.exports.init = function init(HANDLER_PATH){
 		// 请求body不允许为空
 		if(_.isUndefined(Context.request.body)){
 			Context.status = 422;
-			Context.body = 'dsl format error';
+			Context.body = 'dsl is empty';
 			return;
 		}
 
-		let dslString = Context.request.body;	// 去掉所有制表符
+		let dslString = Context.request.body;
 
 		try {
 			SafeEval('(' + dslString + ')');	// 解析js字符串，检查是否存在语法错误
