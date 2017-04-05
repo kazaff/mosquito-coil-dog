@@ -35,6 +35,7 @@ MCDog基于json语法（并不是严格遵守）来实现的DSL语义，允许�
 第一步，按照安装流程将MCDog运行起来，确保它的配置（`config.js`）开启了管理后台服务。
 
 第二步，打开任何一个REST调试工具，这里我们使用Postman来演示，如下图：
+
 ![](https://github.com/kazaff/mosquito-coil-dog/blob/master/docs/create.png)
 
 第三步，继续用Postman请求`http://127.0.0.1:2334/service/rest_get_example_0.2_0/1`接口，注意，这个url前半部分是根据配置文件中定义的（例如：管理后台端地址和端口号），`/service/`部分是rest服务地址，为固定的。`/rest_get_example_0.2_0/`部分是上一步创建的服务的id。`/1`部分则表示将指定服务上线。
